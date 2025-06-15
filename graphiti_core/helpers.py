@@ -27,7 +27,7 @@ from typing_extensions import LiteralString
 
 load_dotenv()
 
-DEFAULT_DATABASE = os.getenv('DEFAULT_DATABASE', None)
+DEFAULT_DATABASE = os.getenv('DEFAULT_DATABASE', 'neo4j')
 USE_PARALLEL_RUNTIME = bool(os.getenv('USE_PARALLEL_RUNTIME', False))
 SEMAPHORE_LIMIT = int(os.getenv('SEMAPHORE_LIMIT', 20))
 MAX_REFLEXION_ITERATIONS = int(os.getenv('MAX_REFLEXION_ITERATIONS', 0))
@@ -38,8 +38,14 @@ RUNTIME_QUERY: LiteralString = (
 )
 
 
-def parse_db_date(neo_date: neo4j_time.DateTime | None) -> datetime | None:
-    return neo_date.to_native() if neo_date else None
+def parse_db_date(neo_date: neo4j_time.DateTime | str | None) -> datetime | None:
+    return (
+        neo_date.to_native()
+        if isinstance(neo_date, neo4j_time.DateTime)
+        else datetime.fromisoformat(neo_date)
+        if neo_date
+        else None
+    )
 
 
 def lucene_sanitize(query: str) -> str:
